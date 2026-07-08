@@ -11,7 +11,7 @@ class JobStatus(Enum):
 @dataclass
 class Job:
     id: str
-    type: str
+    job_type: str
     payload: dict
     status: JobStatus
     created_at: datetime
