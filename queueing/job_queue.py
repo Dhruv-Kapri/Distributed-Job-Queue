@@ -1,5 +1,7 @@
 from collections import deque
+
 from models.job import Job
+
 
 class JobQueue:
     def __init__(self) -> None:
@@ -11,7 +13,7 @@ class JobQueue:
 
         if not isinstance(job, Job):
             raise TypeError("Expected Job")
-        
+
         self._queue.append(job)
 
     def dequeue(self) -> Job | None:

@@ -1,7 +1,8 @@
+from datetime import datetime
+from uuid import uuid4
+
 from models.job import Job, JobStatus
 from queueing.job_queue import JobQueue
-from uuid import uuid4
-from datetime import datetime
 
 
 class JobManager:
