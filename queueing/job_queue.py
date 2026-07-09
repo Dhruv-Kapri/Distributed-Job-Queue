@@ -10,7 +10,6 @@ class JobQueue:
     def enqueue(self, job: Job) -> None:
         if job is None:
             raise ValueError("Job cannot be None")
-
         if not isinstance(job, Job):
             raise TypeError("Expected Job")
 
