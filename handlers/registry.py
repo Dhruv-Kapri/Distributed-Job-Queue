@@ -12,7 +12,7 @@ class HandlerRegistry:
             raise ValueError("Job type cannot be empty")
 
         if not isinstance(handler, Handler):
-            raise TypeError("Handler has to be of type string")
+            raise TypeError("Handler has to be subclass Handler")
         if not handler:
             raise ValueError("Handler cannot be null")
 
