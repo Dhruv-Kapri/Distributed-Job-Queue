@@ -1,3 +1,5 @@
+import threading
+
 from handlers.email_handler import EmailHandler
 from handlers.registry import HandlerRegistry
 from manager.job_manager import JobManager
@@ -14,19 +16,23 @@ def main() -> None:
     queue = JobQueue()
     manager = JobManager(queue)
 
+    worker_count: int = 3
+    workers = [Worker(manager, queue, handler_registry) for _ in range(worker_count)]
+    threads = [threading.Thread(target=worker.run) for worker in workers]
+
+    for thread in threads:
+        thread.start()
+
     # add jobs to queue
-    manager.submit_job(
-        job_type="send_email",
-        payload={"to": "abc@xyz.com", "subject": "job1", "body": "job1"},
-    )
+    test_jobs: int = 10
+    for i in range(test_jobs):
+        manager.submit_job(
+            job_type="send_email",
+            payload={"to": "abc@xyz.com", "subject": f"job{i}", "body": f"job{i}"},
+        )
 
-    manager.submit_job(
-        job_type="send_email",
-        payload={"to": "def@xyz.com", "subject": "job2", "body": "job2"},
-    )
-
-    worker = Worker(manager, queue, handler_registry)
-    worker.run()
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == "__main__":
