@@ -1,5 +1,3 @@
-import time
-
 from handlers.base_handler import Handler
 from handlers.registry import HandlerRegistry
 from manager.job_manager import JobManager
@@ -20,10 +18,7 @@ class Worker:
 
     def run(self) -> None:
         while True:
-            job: Job | None = self.queue.dequeue()
-            if not job:
-                time.sleep(1)
-                continue
+            job: Job = self.queue.dequeue()
 
             handler: Handler | None = self.registry.get(job.job_type)
             if not handler:
