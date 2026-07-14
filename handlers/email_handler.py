@@ -1,3 +1,6 @@
+import threading
+import time
+
 from handlers.base_handler import Handler
 from models.job import Job
 
@@ -9,5 +12,8 @@ class EmailHandler(Handler):
         if job is None:
             raise ValueError("Job cannot be None")
 
-        print(f"Sending email to {job.payload['to']}")
-        return
+        print(f"{threading.current_thread().name} Starting {job.payload['subject']}")
+
+        time.sleep(5)
+
+        print(f"{threading.current_thread().name} Finished {job.payload['subject']}")
