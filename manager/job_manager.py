@@ -3,12 +3,14 @@ from uuid import uuid4
 
 from models.job import Job, JobStatus
 from queueing.job_queue import JobQueue
+from stores import BaseJobStore
 
 
 class JobManager:
-    def __init__(self, queue: JobQueue) -> None:
+    def __init__(self, queue: JobQueue, job_store: BaseJobStore) -> None:
         self.queue = queue
-        self.job_store: dict[str, Job] = {}
+        self.job_store = job_store
+        self.time_zone = None
 
     def submit_job(self, job_type: str, payload: dict) -> str:
         if not isinstance(job_type, str):
@@ -20,7 +22,7 @@ class JobManager:
             raise TypeError("Payload should be a dictionary")
 
         job_id = str(uuid4())
-        now = datetime.now()
+        now = datetime.now(tz=self.time_zone)
         new_job = Job(
             id=job_id,
             job_type=job_type,
@@ -30,7 +32,7 @@ class JobManager:
             updated_at=now,
         )
 
-        self.job_store[job_id] = new_job
+        self.job_store.add_job(new_job)
         self.queue.enqueue(new_job)
 
         return job_id
@@ -41,7 +43,7 @@ class JobManager:
         if not job_id:
             raise ValueError("Empty job id is invalid")
 
-        return self.job_store.get(job_id)
+        return self.job_store.get_job(job_id)
 
     def _update_status(self, job_id: str, status: JobStatus) -> None:
         if not isinstance(job_id, str):
@@ -49,13 +51,13 @@ class JobManager:
         if not job_id:
             raise ValueError("Empty job id is invalid")
 
-        job = self.job_store.get(job_id)
-
+        job = self.job_store.get_job(job_id)
         if job is None:
             return
 
         job.status = status
-        job.updated_at = datetime.now()
+        job.updated_at = datetime.now(tz=self.time_zone)
+        self.job_store.update_job(job_id, job)
 
     def mark_running(self, job_id: str) -> None:
         self._update_status(job_id, JobStatus.RUNNING)
