@@ -219,3 +219,5 @@ __marimo__/
 
 repomix-output.md
 repomix-output.xml
+
+*.db
