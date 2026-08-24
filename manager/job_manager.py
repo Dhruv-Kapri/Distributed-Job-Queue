@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from models.job import Job, JobStatus
@@ -10,7 +10,7 @@ class JobManager:
     def __init__(self, queue: JobQueue, job_store: BaseJobStore) -> None:
         self.queue = queue
         self.job_store = job_store
-        self.time_zone = None
+        self.time_zone = UTC
 
     def submit_job(self, job_type: str, payload: dict) -> str:
         if not isinstance(job_type, str):

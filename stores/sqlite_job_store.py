@@ -35,6 +35,16 @@ class SQLiteJobStore(BaseJobStore):
                 """
             )
 
+    def _row_to_job(self, row: sqlite3.Row) -> Job:
+        return Job(
+            id=row["id"],
+            job_type=row["job_type"],
+            payload=json.loads(row["payload"]),
+            status=JobStatus(row["status"]),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
     def add_job(self, job: Job) -> None:
         # Add the job to the SQLite database
         with self._lock, self._conn:
@@ -55,22 +65,18 @@ class SQLiteJobStore(BaseJobStore):
                 ),
             )
 
-    def get_job(self, job_id) -> Job | None:
+    def get_job(self, job_id: str) -> Job | None:
         # Retrieve the job from the SQLite database by job_id
         with self._lock, self._conn:
             cursor = self._conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,))
             row = cursor.fetchone()
-            if row:
-                return Job(
-                    id=row["id"],
-                    job_type=row["job_type"],
-                    payload=json.loads(row["payload"]),  # Convert string back to dict
-                    status=JobStatus(row["status"]),
-                    created_at=datetime.fromisoformat(row["created_at"]),
-                    updated_at=datetime.fromisoformat(row["updated_at"]),
-                )
 
-    def update_job(self, job_id, job: Job) -> None:
+            if row is None:
+                return None
+
+            return self._row_to_job(row)
+
+    def update_job(self, job_id: str, job: Job) -> None:
         # Update the job in the SQLite database by job_id
         with self._lock, self._conn:
             self._conn.execute(
@@ -88,7 +94,7 @@ class SQLiteJobStore(BaseJobStore):
                 ),
             )
 
-    def delete_job(self, job_id) -> None:
+    def delete_job(self, job_id: str) -> None:
         # Delete the job from the SQLite database by job_id
         with self._lock, self._conn:
             self._conn.execute("DELETE FROM jobs WHERE id=?", (job_id,))
@@ -100,14 +106,5 @@ class SQLiteJobStore(BaseJobStore):
             )
             jobs = []
             for row in cursor.fetchall():
-                jobs.append(
-                    Job(
-                        id=row["id"],
-                        job_type=row["job_type"],
-                        payload=json.loads(row["payload"]),
-                        status=JobStatus(row["status"]),
-                        created_at=datetime.fromisoformat(row["created_at"]),
-                        updated_at=datetime.fromisoformat(row["updated_at"]),
-                    )
-                )
+                jobs.append(self._row_to_job(row))
             return jobs

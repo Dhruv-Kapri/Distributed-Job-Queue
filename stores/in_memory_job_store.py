@@ -1,4 +1,4 @@
-from models.job import Job
+from models.job import Job, JobStatus
 from stores.base_job_store import BaseJobStore
 
 
@@ -12,15 +12,20 @@ class InMemoryJobStore(BaseJobStore):
         if job is not None and job.id is not None:
             self.job_store[job.id] = job
 
-    def get_job(self, job_id) -> Job | None:
+    def get_job(self, job_id: str) -> Job | None:
         if job_id is None:
             return None
         return self.job_store.get(job_id)
 
-    def update_job(self, job_id, job: Job) -> None:
+    def update_job(self, job_id: str, job: Job) -> None:
         if job_id is not None and job is not None and job_id in self.job_store:
             self.job_store[job_id] = job
 
-    def delete_job(self, job_id) -> None:
+    def delete_job(self, job_id: str) -> None:
         if job_id is not None and job_id in self.job_store:
             del self.job_store[job_id]
+
+    def list_by_status(self, status: JobStatus) -> list[Job]:
+        if status is None:
+            return []
+        return [job for job in self.job_store.values() if job.status == status]

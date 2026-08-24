@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from models.job import Job
+from models.job import Job, JobStatus
 
 
 class BaseJobStore(ABC):
@@ -9,13 +9,17 @@ class BaseJobStore(ABC):
         pass
 
     @abstractmethod
-    def get_job(self, job_id) -> Job | None:
+    def get_job(self, job_id: str) -> Job | None:
         pass
 
     @abstractmethod
-    def update_job(self, job_id, job: Job) -> None:
+    def update_job(self, job_id: str, job: Job) -> None:
         pass
 
     @abstractmethod
-    def delete_job(self, job_id) -> None:
+    def delete_job(self, job_id: str) -> None:
+        pass
+
+    @abstractmethod
+    def list_by_status(self, status: JobStatus) -> list[Job]:
         pass

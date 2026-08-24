@@ -3,6 +3,7 @@ import threading
 from handlers.email_handler import EmailHandler
 from handlers.registry import HandlerRegistry
 from manager.job_manager import JobManager
+from models.job import JobStatus
 from queueing.job_queue import JobQueue
 from stores import SQLiteJobStore
 from workers.worker import Worker
@@ -18,7 +19,8 @@ def main() -> None:
     job_store = SQLiteJobStore()
     manager = JobManager(queue, job_store)
 
-    
+    for job in job_store.list_by_status(JobStatus.QUEUED):
+        queue.enqueue(job)
 
     worker_count: int = 3
     workers = [Worker(manager, queue, handler_registry) for _ in range(worker_count)]
@@ -28,7 +30,7 @@ def main() -> None:
         thread.start()
 
     # add jobs to queue
-    test_jobs: int = 10
+    test_jobs: int = 20
     for i in range(test_jobs):
         manager.submit_job(
             job_type="send_email",
